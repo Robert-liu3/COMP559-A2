@@ -61,9 +61,17 @@ class RigidBody:
 		self.force += f
 
 	def step_vel(self, h):
-		# TODO: implement this function
-		return
+		# Update linear velocity
+		self.v += (h / self.mass) * self.force
+
+		# Update angular velocity
+		self.omega += h * np.dot(self.Jinv, self.torque)
+		#return self.v, self.omega
 
 	def step_pos(self, h):	
-		# TODO: implement this function
-		return
+		self.x += h * self.v
+
+		omega_cross_R = np.cross(self.omega, self.R, axisa=0, axisb=0)  # Omega cross R
+    	self.R += h * omega_cross_R
+		self.update_display()
+		#return
