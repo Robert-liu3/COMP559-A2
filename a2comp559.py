@@ -57,6 +57,7 @@ def main_display_loop():
 	do_step = False
 	if(psim.Button("Step")):
 		do_step = True
+
 	_, is_running	= psim.Checkbox("Run", is_running) 
 	psim.TextUnformatted("Elapsed = " + str(elapsed))
 	_, h = psim.SliderFloat("step size", h, v_min=0.001, v_max=0.1)
@@ -73,9 +74,24 @@ def main_display_loop():
 	
 	# show the energy and momentum of just the first body, only a test option
 	if(psim.TreeNode("Energy and Momentum")):
+		k_vel = 0
+		k_rot = 0
+		k_pot = 0
+		lin_momentum = 0
+		ang_momentum = 0
 		for rb in rigid_body_list:
 			psim.TextUnformatted(rb.name)
+			k_vel += 0.5 * rb.mass * np.dot(rb.v, rb.v)
+			k_rot +=  np.sum(0.5 * np.dot(rb.J, np.dot(rb.omega, rb.omega)))
+			k_pot += rb.mass * np.dot(gravity,rb.x)
+			lin_momentum += rb.mass * rb.v
+			ang_momentum += np.sum(np.dot(rb.J, rb.omega))
 			#TODO: compute and display the kinetic energy, potential energy, and linear and angular momentum of each body	
+		psim.TextUnformatted("Kinetic Energy = " + str(k_vel + k_rot))
+		psim.TextUnformatted("Potential Energy = " + str(k_pot))
+		psim.TextUnformatted("Total Energy = " + str(k_vel + k_rot + k_pot))
+		psim.TextUnformatted("Linear Momentum = " + str(lin_momentum))
+		psim.TextUnformatted("Angular Momentum = " + str(ang_momentum))
 		psim.TreePop()
 	
 	if is_running or do_step:
