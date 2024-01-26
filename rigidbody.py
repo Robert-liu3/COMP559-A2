@@ -41,6 +41,7 @@ class RigidBody:
 		self.x = self.x0.copy()
 		self.R = self.R0.copy()
 		self.v = self.v0.copy()
+		self.J = self.J0.copy() #added
 		self.omega = self.omega0.copy()
 		self.force = np.zeros(3)
 		self.torque = np.zeros(3)
@@ -62,16 +63,18 @@ class RigidBody:
 
 	def step_vel(self, h):
 		# Update linear velocity
-		self.v += (h / self.mass) * self.force
+		self.v += (h/self.mass) * self.force
 
 		# Update angular velocity
-		self.omega += h * np.dot(self.Jinv, self.torque)
+
+		self.J = np.dot(np.dot(self.R, self.J0), np.transpose(self.R))
+		self.omega += h * np.dot(self.Jinv0, self.torque - np.cross(self.omega, np.dot(self.J, self.omega), axisa=0, axisb=0))
 		#return self.v, self.omega
 
 	def step_pos(self, h):	
 		self.x += h * self.v
-
+		
 		omega_cross_R = np.cross(self.omega, self.R, axisa=0, axisb=0)  # Omega cross R
-    	self.R += h * omega_cross_R
+		self.R += h * omega_cross_R
 		self.update_display()
 		#return
