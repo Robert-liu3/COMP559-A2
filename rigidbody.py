@@ -69,12 +69,27 @@ class RigidBody:
 
 		self.J = np.dot(np.dot(self.R, self.J0), np.transpose(self.R))
 		self.omega += h * np.dot(self.Jinv0, self.torque - np.cross(self.omega, np.dot(self.J, self.omega), axisa=0, axisb=0))
-		#return self.v, self.omega
+		return
 
-	def step_pos(self, h):	
+	def step_pos(self, h):
+
 		self.x += h * self.v
+
+		omega_norm = np.linalg.norm(self.omega)
+
+		omega_hat = self.omega / omega_norm if omega_norm != 0 else np.zeros(3)
+
+		S = np.array([[0, -omega_hat[2], omega_hat[1]],
+                  [omega_hat[2], 0, -omega_hat[0]],
+                  [-omega_hat[1], omega_hat[0], 0]])
 		
-		omega_cross_R = np.cross(self.omega, self.R, axisa=0, axisb=0)  # Omega cross R
-		self.R += h * omega_cross_R
+		# S = np.array([[0, -self.omega[2], self.omega[1]],
+        #           [self.omega[2], 0, -self.omega[0]],
+        #           [-self.omega[1], self.omega[0], 0]])
+		
+		theta = h * omega_norm
+
+		R_increment = np.identity(3) + np.sin(theta) * S + (1 - np.cos(theta)) * np.dot(S, S)
+		self.R = np.dot(self.R, R_increment)
 		self.update_display()
-		#return
+		return
