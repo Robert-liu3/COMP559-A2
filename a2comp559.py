@@ -85,7 +85,7 @@ def main_display_loop():
 			k_rot +=  np.sum(0.5 * np.dot(rb.J, np.dot(rb.omega, rb.omega)))
 			k_pot += rb.mass * np.dot(gravity,rb.x)
 			lin_momentum += rb.mass * rb.v
-			ang_momentum += np.sum(np.dot(rb.J, rb.omega))
+			ang_momentum += np.dot(rb.J, rb.omega)
 			#TODO: compute and display the kinetic energy, potential energy, and linear and angular momentum of each body	
 		psim.TextUnformatted("Kinetic Energy = " + str(k_vel + k_rot))
 		psim.TextUnformatted("Potential Energy = " + str(k_pot))
