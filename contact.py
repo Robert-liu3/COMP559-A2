@@ -24,6 +24,24 @@ class Contact:
 
 	def compute_jacobian(self):
 		# TODO: implement this function
+		v1 = self.body1.v
+		v2 = self.body2.v
+		omega1 = self.body1.omega
+		omega2 = self.body2.omega
+		normal_transpose = self.n.transpose()
+		r1 = self.body1.x
+		r2 = self.body2.x
+		r1_cross_n_transpose = np.cross(r1,self.n).transpose()
+		r2_cross_n_transpose = np.cross(r2,self.n).transpose()
+
+
+		jrow1 = np.array([-normal_transpose, -r1_cross_n_transpose, normal_transpose, r2_cross_n_transpose])
+		# u = np.array([v1,omega1,v2,omega2])
+
+		print(jrow1)
+
+
+
 		return
 
 	def compute_inv_effective_mass(self):
