@@ -24,10 +24,6 @@ class Contact:
 
 	def compute_jacobian(self):
 		# TODO: implement this function
-		v1 = self.body1.v
-		v2 = self.body2.v
-		omega1 = self.body1.omega
-		omega2 = self.body2.omega
 		normal_transpose = self.n.transpose()
 		r1 = self.body1.x
 		r2 = self.body2.x
@@ -40,10 +36,32 @@ class Contact:
 
 		print(jrow1)
 
-
-
-		return
+		return jrow1
+	
 
 	def compute_inv_effective_mass(self):
 		# TODO: implement this function
-		return
+
+		jacobian = self.compute_jacobian()
+
+		inv_mass_matrix = self.compute_inverse_mass_matrix()
+
+		inv_effective_mass = np.dot(jacobian, np.dot(inv_mass_matrix, jacobian.T))
+
+		return inv_effective_mass
+	
+	def compute_inverse_mass_matrix(self):
+		inv_mass1 = self.body1.mass_inv
+		inv_mass2 = self.body2.mass_inv
+		inv_inertia1 = np.linalg.inv(self.body1.J)
+		inv_inertia2 = np.linalg.inv(self.body2.J)
+
+		# Form the block matrix
+		inv_mass_matrix = np.block([
+			[np.eye(3) * inv_mass1, np.zeros((3, 3))],
+			[np.zeros((3, 3)), inv_inertia1],
+			[np.eye(3) * inv_mass2, np.zeros((3, 3))],
+			[np.zeros((3, 3)), inv_inertia2]
+		])
+
+		return inv_mass_matrix
