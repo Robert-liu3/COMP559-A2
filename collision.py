@@ -78,10 +78,21 @@ class Collision:
 		#TODO: implement this function
 		side_b_vector = []
 		for contact in self.contacts:
-			jacobian = contact.jacobian
+			contact.compute_jacobian()
 			v1 = np.concatenate(contact.body1.v,contact.body1.omega)
 			v2 = np.concatenate(contact.body2.v, contact.body2.omega) 
 			relative_velocity = np.array(v1,v2)
-			contact.side_b_vector = np.dot(jacobian, relative_velocity)
+			contact.side_b_vector = np.dot(contact.jacobian, relative_velocity)
+
+		for i in range(0,100):
+			for contact in self.contacts:
+				inv_effective_mass = contact.compute_inv_effective_mass()
+				numerator = contact.side_b_vector + np.dot(inv_effective_mass[0], contact.lamb)
+				denominator = inv_effective_mass[0][0]
+				new_lamb = contact.lamb - numerator/denominator
+				if (new_lamb < 0):
+					new_lamb = 0
+				else:
+					contact.lamb = new_lamb
 
 		return
