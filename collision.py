@@ -42,6 +42,11 @@ class Collision:
 			if v[1] < 0: # y is up
 				self.contacts.append( Contact( self.ground_body, body, v, np.array([0,1,0]), v[1] ) )
 		
+		# collision check between two bodies
+		# for contact in self.contacts:
+		# 	print(contact.compute_jacobian())
+			
+		
 	def check_body_pair( self, body1, body2 ):
 		# check if any vertex of one body is inside the other
 		# NOTE: this is super gross because the signed distance function is expensive
@@ -71,4 +76,12 @@ class Collision:
 
 	def process(self, rigid_body_list, mu):
 		#TODO: implement this function
+		side_b_vector = []
+		for contact in self.contacts:
+			jacobian = contact.jacobian
+			v1 = np.concatenate(contact.body1.v,contact.body1.omega)
+			v2 = np.concatenate(contact.body2.v, contact.body2.omega) 
+			relative_velocity = np.array(v1,v2)
+			contact.side_b_vector = np.dot(jacobian, relative_velocity)
+
 		return

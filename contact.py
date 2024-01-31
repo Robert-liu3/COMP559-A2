@@ -20,33 +20,43 @@ class Contact:
 		self.t2 = np.cross(self.n, tmp)
 		self.t1 = np.cross(self.t2, self.n)
 		self.d = d
+		self.jacobian = np.array([])
 		self.lamb = np.zeros(3)
+		self.side_b_vector = np.zeros(12)
 
 	def compute_jacobian(self):
 		# TODO: implement this function
 		normal_transpose = self.n.transpose()
-		r1 = self.body1.x
-		r2 = self.body2.x
+		r1 = self.p - self.body1.x
+		r2 = self.p - self.body2.x
 		r1_cross_n_transpose = np.cross(r1,self.n).transpose()
 		r2_cross_n_transpose = np.cross(r2,self.n).transpose()
-
-
 		jrow1 = np.array([-normal_transpose, -r1_cross_n_transpose, normal_transpose, r2_cross_n_transpose])
 		# u = np.array([v1,omega1,v2,omega2])
 
-		print(jrow1)
+		t1 = self.t1
+		t2 = self.t2
+		t1_transpose = t1.transpose()
+		t2_transpose = t2.transpose()
+		r1_cross_t1_transpose = np.cross(r1,t1).transpose()
+		r2_cross_t1_transpose = np.cross(r2,t1).transpose()
+		r1_cross_t2_transpose = np.cross(r1,t2).transpose()
+		r2_cross_t2_transpose = np.cross(r2,t2).transpose()
 
-		return jrow1
+		jrow2 = np.array([-t1_transpose, -r1_cross_t1_transpose, t1_transpose, r2_cross_t1_transpose])
+		jrow3 = np.array([-t2_transpose, -r1_cross_t2_transpose, t2_transpose, r2_cross_t2_transpose])
+
+		self.jacobian = np.vstack([jrow1,jrow2,jrow3])
 	
 
 	def compute_inv_effective_mass(self):
 		# TODO: implement this function
 
-		jacobian = self.compute_jacobian()
+		jacobian = self.jacobian
 
 		inv_mass_matrix = self.compute_inverse_mass_matrix()
 
-		inv_effective_mass = np.dot(jacobian, np.dot(inv_mass_matrix, jacobian.T))
+		inv_effective_mass = np.dot(jacobian, np.dot(inv_mass_matrix, jacobian.transpose()))
 
 		return inv_effective_mass
 	
