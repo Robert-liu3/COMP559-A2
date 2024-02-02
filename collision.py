@@ -74,25 +74,46 @@ class Collision:
 				self.check_body_pair(rigid_body_list[i], rigid_body_list[j])
 		return len(self.contacts) > 0
 
-	def process(self, rigid_body_list, mu):
+	def process(self, rigid_body_list, mu, num_iter):
 		#TODO: implement this function
 		side_b_vector = []
 		for contact in self.contacts:
 			contact.compute_jacobian()
-			v1 = np.concatenate(contact.body1.v,contact.body1.omega)
-			v2 = np.concatenate(contact.body2.v, contact.body2.omega) 
-			relative_velocity = np.array(v1,v2)
+			v1 = np.concatenate((contact.body1.v,contact.body1.omega))
+			v2 = np.concatenate((contact.body2.v, contact.body2.omega)) 
+			relative_velocity = np.concatenate((v1,v2))
 			contact.side_b_vector = np.dot(contact.jacobian, relative_velocity)
-
-		for i in range(0,100):
+		
+		for i in range(0,num_iter):
 			for contact in self.contacts:
-				inv_effective_mass = contact.compute_inv_effective_mass()
-				numerator = contact.side_b_vector + np.dot(inv_effective_mass[0], contact.lamb)
-				denominator = inv_effective_mass[0][0]
-				new_lamb = contact.lamb - numerator/denominator
-				if (new_lamb < 0):
-					new_lamb = 0
-				else:
-					contact.lamb = new_lamb
+				for i in range(0,3):
+					contact.compute_inv_effective_mass()
+					A = contact.inv_effective_mass
+					numerator = contact.side_b_vector[i] + np.dot(A[i,:], contact.lamb)
+					denominator = A[i,i]
+					new_lamb = contact.lamb[i] - numerator/denominator
+					old_lambda = contact.lamb[i]
 
-		return
+					if (i == 0):
+						if (new_lamb < 0):
+							new_lamb = 0
+						contact.lamb[0] = new_lamb
+					else:
+						lambda_max = mu*contact.lamb[0]
+						lambda_min = -lambda_max
+						new_lamb = min(max(lambda_min, new_lamb), lambda_max)
+						contact.lamb[i] = new_lamb
+
+					delta_lambda = contact.lamb[i] - old_lambda
+					delta_v_inital = np.concatenate((contact.body1.deltav,contact.body2.deltav))
+					T = contact.inverse_mass_matrix@contact.jacobian.transpose()
+					delta_v = delta_v_inital + T[:,i]*delta_lambda
+					contact.body1.deltav = delta_v[0:6]
+					contact.body2.deltav = delta_v[6:12]
+		
+		for rb in rigid_body_list:
+			rb.v += rb.deltav[0:3]
+			rb.omega += rb.deltav[3:6]
+			rb.deltav = np.zeros(6)
+
+			

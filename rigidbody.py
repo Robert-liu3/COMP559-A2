@@ -17,6 +17,7 @@ class RigidBody:
 			self.R0 = np.eye(3)
 			self.v0 = np.zeros(3)
 			self.omega0 = np.zeros(3)
+			self.deltav0 = np.zeros(6)
 			self.reset()
 		else:
 			self.name = body_desc['name']
@@ -30,6 +31,7 @@ class RigidBody:
 			self.R0 = np.array(body_desc.get('R0',np.eye(3)), dtype=float)
 			self.v0 = np.array(body_desc.get('v0',(0,0,0)), dtype=float)
 			self.omega0 = np.array(body_desc.get('omega0',(0,0,0)), dtype=float)
+			self.deltav0 = np.zeros(6)
 			self.reset()
 			### Register the mesh
 			# `verts` is a Nx3 numpy array of vertex positions
@@ -41,7 +43,9 @@ class RigidBody:
 		self.x = self.x0.copy()
 		self.R = self.R0.copy()
 		self.v = self.v0.copy()
+		self.deltav = self.deltav0.copy()
 		self.J = self.J0.copy() #added
+		self.Jinv = self.Jinv0.copy()
 		self.omega = self.omega0.copy()
 		self.force = np.zeros(3)
 		self.torque = np.zeros(3)
@@ -68,7 +72,8 @@ class RigidBody:
 		# Update angular velocity
 
 		self.J = np.dot(np.dot(self.R, self.J0), np.transpose(self.R))
-		self.omega += h * np.dot(self.Jinv0, self.torque - np.cross(self.omega, np.dot(self.J, self.omega), axisa=0, axisb=0))
+		self.Jinv = np.dot(np.dot(np.transpose(self.R), self.Jinv0), self.R)
+		self.omega += h * np.dot(self.Jinv, self.torque - np.cross(self.omega, np.dot(self.J, self.omega), axisa=0, axisb=0))
 		return
 
 	def step_pos(self, h):
@@ -90,6 +95,5 @@ class RigidBody:
 		theta = h * omega_norm
 
 		R_increment = np.identity(3) + np.sin(theta) * S + (1 - np.cos(theta)) * np.dot(S, S)
-		self.R = np.dot(self.R, R_increment)
-		self.update_display()
+		self.R = np.dot(R_increment, self.R)
 		return

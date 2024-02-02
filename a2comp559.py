@@ -20,7 +20,7 @@ ps.set_ground_plane_height_factor(-0.2,is_relative=True)
 			
 # process argumetns from command line and setup with selected json file
 parser = argparse.ArgumentParser()
-parser.add_argument("--file", type=str, default = "scenes/scene1.json")
+parser.add_argument("--file", type=str, default = "scenes/scene6.json")
 args = parser.parse_args()
 data = json.load(open(args.file))
 rigid_body_list = []
@@ -30,6 +30,7 @@ sim_params = data['sim_parameters'][0]
 gravity = np.array(sim_params.get('gravity',(0.0,0.0,0.0)))	# 3x1 vector
 h = sim_params.get('dt',0.01)
 mu = sim_params.get('mu',0)
+num_iter = sim_params.get('num_iter',100)
 substeps = sim_params.get('substeps',1)
 is_running = sim_params.get('is_running',False)
 check_collisions = sim_params.get('check_collisions',True)
@@ -103,7 +104,7 @@ def main_display_loop():
 				rb.add_force( gravity * rb.mass )
 				rb.step_vel( stepsize )
 			if check_collisions and collision.check(rigid_body_list) :
-				collision.process(rigid_body_list,mu)
+				collision.process(rigid_body_list, mu, num_iter)
 				if stop_on_contact:
 					is_running = False
 			for rb in rigid_body_list:

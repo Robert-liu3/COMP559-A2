@@ -23,6 +23,8 @@ class Contact:
 		self.jacobian = np.array([])
 		self.lamb = np.zeros(3)
 		self.side_b_vector = np.zeros(12)
+		self.inverse_mass_matrix = np.zeros((12,12))
+		self.inv_effective_mass = np.zeros((3,3))
 
 	def compute_jacobian(self):
 		# TODO: implement this function
@@ -31,7 +33,7 @@ class Contact:
 		r2 = self.p - self.body2.x
 		r1_cross_n_transpose = np.cross(r1,self.n).transpose()
 		r2_cross_n_transpose = np.cross(r2,self.n).transpose()
-		jrow1 = np.array([-normal_transpose, -r1_cross_n_transpose, normal_transpose, r2_cross_n_transpose])
+		jrow1 = np.concatenate([-normal_transpose, -r1_cross_n_transpose, normal_transpose, r2_cross_n_transpose])
 		# u = np.array([v1,omega1,v2,omega2])
 
 		t1 = self.t1
@@ -43,10 +45,10 @@ class Contact:
 		r1_cross_t2_transpose = np.cross(r1,t2).transpose()
 		r2_cross_t2_transpose = np.cross(r2,t2).transpose()
 
-		jrow2 = np.array([-t1_transpose, -r1_cross_t1_transpose, t1_transpose, r2_cross_t1_transpose])
-		jrow3 = np.array([-t2_transpose, -r1_cross_t2_transpose, t2_transpose, r2_cross_t2_transpose])
+		jrow2 = np.concatenate([-t1_transpose, -r1_cross_t1_transpose, t1_transpose, r2_cross_t1_transpose])
+		jrow3 = np.concatenate([-t2_transpose, -r1_cross_t2_transpose, t2_transpose, r2_cross_t2_transpose])
 
-		self.jacobian = np.vstack([jrow1,jrow2,jrow3])
+		self.jacobian = np.vstack((jrow1,jrow2,jrow3))
 	
 
 	def compute_inv_effective_mass(self):
@@ -54,24 +56,23 @@ class Contact:
 
 		jacobian = self.jacobian
 
-		inv_mass_matrix = self.compute_inverse_mass_matrix()
+		self.compute_inverse_mass_matrix()
 
-		inv_effective_mass = np.dot(jacobian, np.dot(inv_mass_matrix, jacobian.transpose()))
+		inv_effective_mass = np.dot(jacobian, np.dot(self.inverse_mass_matrix, jacobian.transpose()))
 
-		return inv_effective_mass
+		self.inv_effective_mass = inv_effective_mass
 	
 	def compute_inverse_mass_matrix(self):
 		inv_mass1 = self.body1.mass_inv
 		inv_mass2 = self.body2.mass_inv
-		inv_inertia1 = np.linalg.inv(self.body1.J)
-		inv_inertia2 = np.linalg.inv(self.body2.J)
+		inv_inertia1 = self.body1.Jinv
+		inv_inertia2 = self.body2.Jinv
 
 		# Form the block matrix
 		inv_mass_matrix = np.block([
-			[np.eye(3) * inv_mass1, np.zeros((3, 3))],
-			[np.zeros((3, 3)), inv_inertia1],
-			[np.eye(3) * inv_mass2, np.zeros((3, 3))],
-			[np.zeros((3, 3)), inv_inertia2]
+			[np.eye(3) * inv_mass1, np.zeros((3, 3)), np.zeros((3, 3)), np.zeros((3, 3))],
+			[np.zeros((3, 3)), inv_inertia1, np.zeros((3, 3)), np.zeros((3, 3))],
+			[np.zeros((3, 3)), np.zeros((3, 3)), np.eye(3) * inv_mass2, np.zeros((3, 3))],
+			[np.zeros((3, 3)), np.zeros((3, 3)), np.zeros((3,3)), inv_inertia2]
 		])
-
-		return inv_mass_matrix
+		self.inverse_mass_matrix = inv_mass_matrix

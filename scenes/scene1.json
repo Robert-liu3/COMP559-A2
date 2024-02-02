@@ -5,7 +5,8 @@
             "dt": 0.01,
             "gravity": [0, 0, 0],
             "substeps": 10,
-            "check_collisions": false
+            "check_collisions": false,
+            "num_iter": 200
         }
     ],
     "bodies":[
