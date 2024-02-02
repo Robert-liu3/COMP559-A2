@@ -1,4 +1,4 @@
-# TODO: YOUR NAME AND STUDENT NUMBER HERE
+# ROBERT LIU 260981372
 
 import igl
 import numpy as np

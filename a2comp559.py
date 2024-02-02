@@ -1,4 +1,4 @@
-# TODO: YOUR NAME AND STUDENT NUMBER HERE
+# ROBERT LIU 260981372
 
 import numpy as np
 import polyscope as ps
@@ -20,7 +20,7 @@ ps.set_ground_plane_height_factor(-0.2,is_relative=True)
 			
 # process argumetns from command line and setup with selected json file
 parser = argparse.ArgumentParser()
-parser.add_argument("--file", type=str, default = "scenes/scene6.json")
+parser.add_argument("--file", type=str, default = "scenes/scene5.json")
 args = parser.parse_args()
 data = json.load(open(args.file))
 rigid_body_list = []
@@ -45,8 +45,8 @@ np.set_printoptions(formatter={'float_kind':"{:.2f}".format})
 def main_display_loop():
 	global is_running, check_collisions, show_contacts, stop_on_contact, substeps, gravity, mu, elapsed, h
 
-	# TODO: SET YOUR NAME AND STUDENT NUMBER HERE
-	psim.TextUnformatted("YOUR NAME AND STUDENT NUMBER HERE")
+	# ROBERT LIU 260981372
+	psim.TextUnformatted("ROBERT LIU 260981372")
 	psim.TextUnformatted(sim_params['name'])
 	if(psim.Button("Reset")):
 		collision.reset()

@@ -1,4 +1,4 @@
-# TODO: YOUR NAME AND STUDENT NUMBER HERE
+# ROBERT LIU 260981372
 
 import numpy as np
 import polyscope as ps
